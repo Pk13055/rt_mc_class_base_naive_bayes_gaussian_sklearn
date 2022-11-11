@@ -72,6 +72,13 @@ $PROJECT_DIR
 		cd $PROJECT_DIR/repository
 		docker build -t ready-tensor/gaussian-nb .
 		```
+- **Additionally**, if any requirements are changed (in `requirements.in`):
+
+		```bash
+		pip install pip-tools
+		pip-compile requirements.in > requirements.txt
+		pip install -r requirements.txt
+		```
 
 ## Running
 
