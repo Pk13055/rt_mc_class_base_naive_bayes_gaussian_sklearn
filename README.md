@@ -1,5 +1,7 @@
-Naive Bayes Gaussian Classifier in SciKitLearn for Multi-class Classification - Base problem category as per Ready Tensor specifications.
+# Naive Bayes Gaussian Classifier in SciKitLearn for Multi-class Classification 
+## Base problem category as per Ready Tensor specifications.
 
+### Tags
 - naive bayes gaussian
 - multi-class classification
 - sklearn
@@ -7,14 +9,75 @@ Naive Bayes Gaussian Classifier in SciKitLearn for Multi-class Classification - 
 - pandas
 - numpy
 - scikit-optimize
-- flask
+- fastAPI
 - nginx
 - uvicorn
 - docker
 
+### Introduction
 
 The data preprocessing step includes missing data imputation, standardization, one-hot encoding for categorical variables, datatype casting, etc. The missing categorical values are imputed using the most frequent value if they are rare. Otherwise if the missing value is frequent, they are give a "missing" label instead. Missing numerical values are imputed using the mean and a binary column is added to show a 'missing' indicator for the missing values. Numerical values are also scaled using a Yeo-Johnson transformation in order to get the data close to a Gaussian distribution.
 
 During the model development process, the algorithm was trained and evaluated on a variety of publicly available datasets such as email primary-tumor, splice, stalog, steel plate fault, wine, and car.
 
 This Multi-class Classifier is written using Python as its programming language. Scikitlearn is used to implement the main algorithm, create the data preprocessing pipeline, and evaluate the model. Numpy, pandas, and feature_engine are used for the data preprocessing steps. SciKit-Optimize was used to handle the HPT. FastAPI + Nginx + uvicorn are used to provide web service which includes two endpoints- /ping for health check and /infer for predictions in real time.
+
+### Setup
+
+- create a virtualenv (_optional_)
+
+		```bash
+		mkvirtualenv gaussian-nb
+		workon gaussian-bn
+		```
+- install dependencies
+
+		```bash
+		pip install -r requirements.txt
+		```
+
+- Run locally to generate `ml_vol`
+
+		```bash
+		cd local_test
+		./run_local.py
+		```
+
+- Ensure appropriate dir structure
+
+```bash
+$PROJECT_DIR
+├── datasets
+│   ├── car
+│   ├── dna_splice_junction
+│   ├── gesture_phase
+│   └── ...
+├── repository
+│   ├── Dockerfile
+│   ├── README.md
+│   ├── app
+│   ├── local_test
+│   ├── ml_vol
+│   └── requirements.txt
+└── ml_vol # (same as repository/ml_vol)
+    ├── hpt
+    ├── inputs
+    ├── model
+    └── outputs
+```
+
+- Build docker container
+
+		```bash
+		cd $PROJECT_DIR/repository
+		docker build -t ready-tensor/gaussian-nb .
+		```
+
+## Running
+
+```bash
+cd $PROJECT_DIR
+docker run -it -v $PROJECT_DIR/ml_vol:/opt/ml_vol -v $PROJECT_DIR/repository/app:/opt/app -p 8080:8080 ready-tensor/gaussian-nb train
+# replace train with test|serve once training is done
+```
+
