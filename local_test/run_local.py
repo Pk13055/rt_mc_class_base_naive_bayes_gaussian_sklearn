@@ -1,4 +1,12 @@
 #!/usr/bin/env python3
+# coding: utf-8
+"""
+    :brief: this script is useful for doing the algorithm testing locally without needing
+    to build the docker image and run the container.
+    make sure you create your virtual environment, install the dependencies
+    from requirements.txt file, and then use that virtual env to do your testing.
+    This isnt foolproof. You can still have host os, or python-version related issues, so beware.
+"""
 import os
 import shutil
 import sys
@@ -49,17 +57,7 @@ if not os.path.exists(test_results_path):
 
 
 # change this to whereever you placed your local testing datasets
-local_datapath = "./../../datasets"
-
-
-"""
-this script is useful for doing the algorithm testing locally without needing
-to build the docker image and run the container.
-make sure you create your virtual environment, install the dependencies
-from requirements.txt file, and then use that virtual env to do your testing.
-This isnt foolproof. You can still have host os, or python-version related issues, so beware.
-"""
-
+local_datapath = os.getenv("LOCAL_DATAPATH", "./../../datasets")
 model_name = mc_classifier.MODEL_NAME
 
 
@@ -149,7 +147,7 @@ def train_and_save_algo():
     print("done with training")
 
 
-def load_and_test_algo():
+def load_and_test_algo(dataset_name: str):
     # Read data
     test_data = utils.get_data(test_data_path)
     # read data config
@@ -161,13 +159,13 @@ def load_and_test_algo():
     # save predictions
     utils.save_dataframe(predictions, testing_outputs_path, "test_predictions.csv")
     # score the results
-    test_key = get_test_key()
+    test_key = get_test_key(dataset_name)
     results = score(test_key, predictions, data_schema)
     print("done with predictions")
     return results
 
 
-def get_test_key():
+def get_test_key(dataset_name: str) -> pd.DataFrame:
     test_key = pd.read_csv(
         f"{local_datapath}/{dataset_name}/{dataset_name}_test_key.csv"
     )
@@ -277,8 +275,8 @@ def run_train_and_test(dataset_name, run_hpt, num_hpt_trials):
     train_and_save_algo()  # train the model and save
 
     # set_scoring_vars(dataset_name=dataset_name)
-    results = (
-        load_and_test_algo()
+    results = load_and_test_algo(
+        dataset_name
     )  # load the trained model and get predictions on test data
 
     end = time.time()
@@ -297,19 +295,21 @@ def run_train_and_test(dataset_name, run_hpt, num_hpt_trials):
     return results
 
 
-if __name__ == "__main__":
-
+def main():
     num_hpt_trials = 30
     run_hpt_list = [False, True]
     run_hpt_list = [False]
-
     datasets = [
-        # "car",
+        "dna_splice_junction",
+        "gesture_phase",
+        "ipums_census_small",
+        "landsat_satellite",
+        "page_blocks",
         "primary_tumor",
-        # "splice",
-        # "statlog",
+        "soybean_disease",
+        "spotify_genre",
         "steel_plate_fault",
-        # "wine",
+        "vehicle_silhouettes",
     ]
     # datasets = ["primary_tumor"]
 
@@ -324,3 +324,7 @@ if __name__ == "__main__":
             print("-" * 60)
 
         save_test_outputs(all_results, run_hpt, dataset_name=None)
+
+
+if __name__ == "__main__":
+    main()
