@@ -10,7 +10,7 @@ from tempfile import NamedTemporaryFile
 from typing import Union
 
 import pandas as pd
-from fastapi import FastAPI, File, UploadFile
+from fastapi import Depends, FastAPI, File, UploadFile
 from fastapi.responses import FileResponse
 
 warnings.filterwarnings("ignore")
@@ -38,6 +38,12 @@ model_server = ModelServer(model_path=model_path)
 app = FastAPI()
 
 
+async def gen_temp_file(ext: str = ".csv"):
+    """Generate a temporary file with a given extension"""
+    with NamedTemporaryFile(suffix=ext, delete=True) as temp_file:
+        yield temp_file.name
+
+
 @app.get("/ping", tags=["ping", "healthcheck"])
 async def ping() -> dict:
     """Determine if the container is working and healthy."""
@@ -49,7 +55,9 @@ async def ping() -> dict:
 
 
 @app.post("/infer", tags=["inference"], response_class=FileResponse)
-async def infer(input: UploadFile = File(...)) -> Union[FileResponse, dict]:
+async def infer(
+    input: UploadFile = File(...), temp=Depends(gen_temp_file)
+) -> Union[FileResponse, dict]:
     """Do an inference on a single batch of data. In this sample server, we take data as CSV, convert
     it to a pandas data frame for internal use and then convert the predictions back to CSV (which really
     just means one prediction per line, since there's a single column.
@@ -73,10 +81,8 @@ async def infer(input: UploadFile = File(...)) -> Union[FileResponse, dict]:
     try:
         predictions = model_server.predict(data, data_schema)
         # Convert from dataframe to CSV
-        with NamedTemporaryFile() as temp:
-            predictions.to_csv(temp.name, index=False)
-            temp.seek(0)
-            return FileResponse(temp.name, media_type="text/csv")
+        predictions.to_csv(temp, index=False)
+        return FileResponse(temp, media_type="text/csv")
     except Exception as err:
         # Write out an error file. This will be returned as the failureReason to the client.
         trc = traceback.format_exc()
