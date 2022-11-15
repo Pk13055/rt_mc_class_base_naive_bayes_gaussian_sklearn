@@ -1,30 +1,12 @@
 [
   {
-    "name": "penalty",
-    "short_desc": "The norm of the penalty - one of l1, l2, elasticnet, or none",
-    "default": "l2",
-    "type": "categorical",
-    "categorical_vals": ["l1", "l2", "elasticnet", "none"],
-    "run_HPO": true
-  },
-  {
-    "name": "C",
-    "short_desc": "Inverse of regularization strength; must be a positive float. Like in support vector machines, smaller values specify stronger regularization.",
-    "default": 0.5,
+    "name": "var_smoothing",
+    "short_desc": "Portion of the largest variance of all features that is added to variances for calculation stability.",
+    "default": 1e-09,
     "type": "real",
     "search_type": "uniform",
-    "range_low": 1e-6,
-    "range_high": 1.0,
-    "run_HPO": true
-  },
-  {
-    "name": "l1_ratio",
-    "short_desc": "The Elastic-Net mixing parameter, with 0 <= l1_ratio <= 1. Only used if penalty='elasticnet'",
-    "default": 0.5,
-    "type": "int",
-    "search_type": "uniform",
-    "range_low": 0.0,
-    "range_high": 1.0,
+    "range_low": 3e-10,
+    "range_high": 1e-08,
     "run_HPO": true
   }
 ]
